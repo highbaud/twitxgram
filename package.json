@@ -16,6 +16,9 @@
   "author": "Max Avery (@highbaud)",
   "license": "MIT",
   "engines": { "node": ">=18" },
+  "repository": { "type": "git", "url": "git+https://github.com/highbaud/twitxgram.git" },
+  "homepage": "https://github.com/highbaud/twitxgram#readme",
+  "bugs": { "url": "https://github.com/highbaud/twitxgram/issues" },
   "type": "commonjs",
   "dependencies": {
     "dotenv": "^17.4.2",

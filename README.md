@@ -6,9 +6,13 @@ Fetches tweet data via Twitter API v2 and renders screenshots using Playwright C
 ## Setup
 
 ```bash
+git clone https://github.com/highbaud/twitxgram.git
+cd twitxgram
+npm install
+npx playwright install chromium
 cp .env.example .env
 # Fill in TWITTER_BEARER_TOKEN — get one free at developer.twitter.com
-npm start
+npm start            # → http://localhost:3030  (open it for the playground)
 ```
 
 ## Playground
