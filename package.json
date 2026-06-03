@@ -1,0 +1,29 @@
+{
+  "name": "twitxgram",
+  "version": "1.0.0",
+  "description": "Turn any tweet or thread into a clean, shareable image (PNG/JPG/WebP/SVG) — themes, gradient & custom backgrounds, quote posters, carousels, thread mode — with a live playground, an auto-follow watcher, and direct Metricool publishing.",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "node --test test/*.test.js",
+    "smoke": "node test-backgrounds.js && node test-carousel.js"
+  },
+  "keywords": [
+    "twitter", "x", "tweet", "screenshot", "thread", "social-media",
+    "metricool", "playwright", "image-generation", "carousel", "quote-card"
+  ],
+  "author": "Max Avery (@highbaud)",
+  "license": "MIT",
+  "engines": { "node": ">=18" },
+  "type": "commonjs",
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.5.2",
+    "nodemailer": "^8.0.10",
+    "playwright": "^1.60.0",
+    "sharp": "^0.34.5",
+    "twitter-api-v2": "^1.29.0"
+  }
+}

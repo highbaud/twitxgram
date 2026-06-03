@@ -1,0 +1,18 @@
+# dependencies
+node_modules/
+
+# runtime / generated (never commit)
+output/
+test-output/
+data/
+backgrounds/
+
+# secrets & env (keep .env.example tracked)
+.env
+.env.*
+!.env.example
+
+# logs / os cruft
+*.log
+.DS_Store
+Thumbs.db

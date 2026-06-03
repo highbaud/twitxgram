@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>TwitXGram — Playground</title>
+<style>
+/* Hallmark · redesign · genre: modern-minimal · theme: dark cool-neutral + azure accent · system-native
+ * pre-emit critique: P4 H5 E5 S4 R5 V4
+ */
+  :root {
+    /* paper / surfaces */
+    --bg:        oklch(15% 0.012 255);
+    --panel:     oklch(19% 0.013 255);
+    --surface:   oklch(23% 0.015 255);
+    --surface-2: oklch(27% 0.017 255);
+    --border:    oklch(32% 0.02 255);
+    --border-2:  oklch(44% 0.03 255);
+    /* ink */
+    --text:      oklch(96% 0.005 255);
+    --subtext:   oklch(72% 0.015 255);
+    --faint:     oklch(56% 0.02 255);
+    /* accent + signal */
+    --accent:    oklch(65% 0.15 245);
+    --accent-h:  oklch(59% 0.16 245);
+    --accent-ink: oklch(99% 0.02 245);
+    --danger:    oklch(66% 0.18 18);
+    --ok:        oklch(72% 0.15 155);
+    --ring:      oklch(72% 0.14 245 / 0.55);
+    /* effects / depth */
+    --glyph-2:      oklch(55% 0.17 270);
+    --glyph-shadow: oklch(65% 0.15 245 / 0.35);
+    --vignette:     oklch(11% 0.01 255 / 0.65);
+    --scrim:        oklch(15% 0.01 255 / 0.78);
+    --dot:          oklch(100% 0 0 / 0.045);
+    --hairline-img: oklch(100% 0 0 / 0.06);
+    --shadow-img:   oklch(0% 0 0 / 0.55);
+    --shadow-slide: oklch(0% 0 0 / 0.5);
+    /* spacing (4pt) */
+    --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 22px; --s6: 32px;
+    /* radii */
+    --r-sm: 7px; --r-md: 10px; --r-lg: 14px; --r-pill: 999px;
+    /* type */
+    --t-xs: 11px; --t-sm: 12px; --t-base: 13px; --t-md: 14px; --t-lg: 16px; --t-xl: 19px;
+    --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+    /* motion */
+    --ease-out: cubic-bezier(.2,.7,.2,1);
+    --ease: cubic-bezier(.4,0,.2,1);
+    --dur: .15s;
+  }
+  * { box-sizing: border-box; }
+  html, body { overflow-x: clip; }
+  body {
+    margin: 0; font-family: var(--font-ui);
+    background: var(--bg); color: var(--text);
+    display: flex; min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Control panel ── */
+  .panel {
+    width: 384px; flex-shrink: 0;
+    background: var(--panel);
+    border-right: 1px solid var(--border);
+    padding: var(--s5) var(--s5) var(--s6);
+    overflow-y: auto; height: 100vh;
+    scrollbar-width: thin; scrollbar-color: var(--border-2) transparent;
+  }
+  .panel::-webkit-scrollbar { width: 9px; }
+  .panel::-webkit-scrollbar-thumb { background: var(--border); border-radius: var(--r-pill); border: 3px solid var(--panel); }
+  .panel::-webkit-scrollbar-thumb:hover { background: var(--border-2); }
+
+  /* ── Brand header ── */
+  .brand { display: flex; align-items: center; gap: var(--s3); }
+  .glyph {
+    width: 30px; height: 30px; border-radius: 9px; flex-shrink: 0;
+    background: linear-gradient(150deg, var(--accent), var(--glyph-2));
+    display: grid; place-items: center;
+    color: var(--accent-ink); font-weight: 800; font-size: 15px;
+    box-shadow: 0 2px 8px var(--glyph-shadow);
+  }
+  h1 { font-size: var(--t-xl); margin: 0; font-weight: 700; letter-spacing: -.01em; }
+  h1 .x { color: var(--accent); }
+  .sub { color: var(--subtext); font-size: var(--t-sm); margin: var(--s2) 0 0; }
+
+  /* ── Section grouping ── */
+  .group { padding-top: var(--s5); margin-top: var(--s5); border-top: 1px solid var(--border); }
+  .group-title {
+    font-size: 10.5px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase;
+    color: var(--faint); margin: 0 0 var(--s3);
+  }
+
+  label { display: block; font-size: var(--t-sm); color: var(--subtext); margin: var(--s4) 0 var(--s2); font-weight: 600; }
+  .group > label:first-of-type, label.tight { margin-top: 0; }
+
+  /* ── Inputs ── */
+  input[type=text], input[type=datetime-local], select, input[type=number], textarea {
+    width: 100%; background: var(--surface); border: 1px solid var(--border); color: var(--text);
+    border-radius: var(--r-md); padding: 10px 12px; font-size: var(--t-base); font-family: inherit;
+    outline: none; transition: border-color var(--dur) var(--ease-out), box-shadow var(--dur) var(--ease-out), background var(--dur) var(--ease-out);
+  }
+  input::placeholder, textarea::placeholder { color: var(--faint); }
+  textarea { resize: vertical; line-height: 1.5; }
+  input:hover, select:hover, textarea:hover { border-color: var(--border-2); }
+  input:focus-visible, select:focus-visible, textarea:focus-visible {
+    border-color: var(--accent); box-shadow: 0 0 0 3px var(--ring);
+  }
+  /* custom select chevron (data-URI, CSP-safe) */
+  select {
+    appearance: none; -webkit-appearance: none; cursor: pointer; padding-right: 32px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2389929e' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 11px center;
+  }
+  select option { background: var(--surface); color: var(--text); }
+
+  .row { display: flex; gap: var(--s3); }
+  .row > div { flex: 1; min-width: 0; }
+
+  /* ── Checkboxes ── */
+  .checks { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s2); margin-top: var(--s3); }
+  .chk { display: flex; align-items: center; gap: var(--s2); font-size: var(--t-base); color: var(--text); cursor: pointer; padding: var(--s1) 0; user-select: none; }
+  .chk input[type=checkbox] {
+    appearance: none; -webkit-appearance: none; margin: 0;
+    width: 17px; height: 17px; flex-shrink: 0; border-radius: 5px;
+    border: 1.5px solid var(--border-2); background: var(--surface);
+    cursor: pointer; transition: background var(--dur) var(--ease-out), border-color var(--dur) var(--ease-out);
+  }
+  .chk input[type=checkbox]:checked {
+    background: var(--accent) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6L9 17l-5-5'/%3E%3C/svg%3E") center / 12px no-repeat;
+    border-color: var(--accent);
+  }
+  .chk input[type=checkbox]:focus-visible { box-shadow: 0 0 0 3px var(--ring); }
+
+  /* ── Buttons ── */
+  button {
+    font-family: inherit; font-size: var(--t-base); font-weight: 600; cursor: pointer;
+    border: 1px solid transparent; border-radius: var(--r-md); padding: 10px 14px;
+    display: inline-flex; align-items: center; justify-content: center; gap: var(--s2);
+    transition: background var(--dur) var(--ease-out), border-color var(--dur) var(--ease-out), transform .04s var(--ease-out);
+  }
+  button svg { width: 15px; height: 15px; }
+  button:active { transform: translateY(1px); }
+  button:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--ring); }
+  .primary { background: var(--accent); color: var(--accent-ink); font-weight: 700; }
+  .primary:hover { background: var(--accent-h); }
+  .primary.block { width: 100%; padding: 12px; }
+  button.ghost { background: var(--surface); border-color: var(--border); color: var(--text); }
+  button.ghost:hover { background: var(--surface-2); border-color: var(--border-2); }
+  .btns { display: flex; gap: var(--s2); margin-top: var(--s2); }
+  .btns button { flex: 1; }
+
+  /* ── Collapsible sections ── */
+  details { border-top: 1px solid var(--border); margin-top: var(--s5); padding-top: var(--s4); }
+  details > summary {
+    list-style: none; cursor: pointer; display: flex; align-items: center; justify-content: space-between;
+    font-size: var(--t-md); font-weight: 600; color: var(--text); padding: var(--s1) 0;
+    transition: color var(--dur) var(--ease-out);
+  }
+  details > summary::-webkit-details-marker { display: none; }
+  details > summary::after {
+    content: ""; width: 9px; height: 9px; flex-shrink: 0;
+    border-right: 2px solid var(--faint); border-bottom: 2px solid var(--faint);
+    transform: rotate(-45deg); transition: transform var(--dur) var(--ease-out); margin-right: 3px;
+  }
+  details[open] > summary::after { transform: rotate(45deg); }
+  details > summary:hover { color: var(--accent); }
+  details > summary:hover::after { border-color: var(--accent); }
+  details > *:not(summary):first-of-type { margin-top: var(--s3); }
+
+  /* ── Thread / watch list rows ── */
+  .thread-box {
+    margin-top: var(--s3); border: 1px solid var(--border); border-radius: var(--r-md);
+    padding: var(--s2) var(--s3); background: var(--bg); max-height: 240px; overflow-y: auto;
+  }
+  .thread-row { display: flex; gap: var(--s2); align-items: flex-start; font-size: var(--t-sm); padding: var(--s2) 0; border-bottom: 1px solid var(--border); }
+  .thread-row:last-child { border-bottom: 0; }
+  .thread-row .who { font-weight: 700; color: var(--text); }
+  .thread-row .who.other { color: var(--accent); }
+  .thread-row a.rm { color: var(--danger); text-decoration: none; font-size: var(--t-xs); }
+  .thread-row a.rm:hover { text-decoration: underline; }
+  .thread-row input[type=checkbox] {
+    appearance: none; -webkit-appearance: none; margin: 2px 0 0; width: 16px; height: 16px; flex-shrink: 0;
+    border-radius: 5px; border: 1.5px solid var(--border-2); background: var(--surface); cursor: pointer;
+  }
+  .thread-row input[type=checkbox]:checked {
+    background: var(--accent) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6L9 17l-5-5'/%3E%3C/svg%3E") center / 11px no-repeat;
+    border-color: var(--accent);
+  }
+  .muted { color: var(--subtext); font-size: var(--t-xs); line-height: 1.5; }
+  /* include-a-reply chips */
+  .reply-add { display: flex; gap: var(--s2); margin-top: var(--s3); }
+  .reply-add input { flex: 1; }
+  .reply-add button { flex-shrink: 0; padding: 10px 14px; }
+  .chips { display: flex; flex-wrap: wrap; gap: var(--s2); margin-top: var(--s2); }
+  .chip {
+    display: inline-flex; align-items: center; gap: var(--s2); font-size: var(--t-xs); font-weight: 600;
+    background: var(--surface); border: 1px solid var(--border); color: var(--text);
+    border-radius: var(--r-pill); padding: 4px 6px 4px 11px;
+  }
+  .chip button {
+    all: unset; cursor: pointer; width: 16px; height: 16px; border-radius: 50%;
+    display: grid; place-items: center; color: var(--subtext); font-size: 14px; line-height: 1;
+  }
+  .chip button:hover { background: var(--surface-2); color: var(--danger); }
+  /* custom-background manager */
+  .bg-manager { margin-top: var(--s2); }
+  .bg-upload { width: 100%; font-size: var(--t-xs); padding: 8px; }
+  .bg-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(46px, 1fr)); gap: var(--s2); }
+  .bg-grid:not(:empty) { margin-bottom: var(--s2); }
+  .bg-thumb {
+    position: relative; aspect-ratio: 1; border-radius: var(--r-sm); cursor: pointer;
+    background-size: cover; background-position: center; border: 1px solid var(--border);
+    transition: border-color var(--dur) var(--ease-out);
+  }
+  .bg-thumb:hover { border-color: var(--accent); }
+  .bg-thumb.sel { border-color: var(--accent); box-shadow: 0 0 0 2px var(--ring); }
+  .bg-rm {
+    position: absolute; top: -6px; right: -6px; width: 18px; height: 18px; border-radius: 50%;
+    border: 1px solid var(--panel); background: var(--danger); color: #fff; font-size: 12px; line-height: 1;
+    cursor: pointer; display: none; place-items: center; padding: 0;
+  }
+  .bg-thumb:hover .bg-rm { display: grid; }
+  code { background: var(--surface); padding: 2px 6px; border-radius: 5px; font-size: var(--t-xs); font-family: var(--font-mono); color: var(--subtext); word-break: break-all; }
+
+  /* ── Stage / canvas ── */
+  .stage {
+    flex: 1; position: relative; display: grid; place-items: center; padding: var(--s6);
+    overflow: auto;
+    background-color: var(--bg);
+    background-image: radial-gradient(circle at 1px 1px, var(--dot) 1px, transparent 0);
+    background-size: 22px 22px;
+  }
+  .stage::before {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(120% 90% at 50% 0%, transparent 55%, var(--vignette) 100%);
+  }
+  .preview { position: relative; max-width: 100%; }
+  .preview img {
+    max-width: 100%; max-height: 82vh; display: block; border-radius: var(--r-md);
+    box-shadow: 0 24px 70px var(--shadow-img); outline: 1px solid var(--hairline-img);
+  }
+  @keyframes tg-fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  .preview img.fade { animation: tg-fade .18s var(--ease-out); }
+  @media (prefers-reduced-motion: reduce) { .preview img.fade { animation: none; } }
+
+  .slides { display: flex; gap: var(--s4); flex-wrap: wrap; justify-content: center; }
+  .slide { position: relative; }
+  .slide img { max-height: 70vh; border-radius: var(--r-md); display: block; box-shadow: 0 16px 44px var(--shadow-slide); }
+  .slide .dl {
+    position: absolute; bottom: var(--s2); right: var(--s2); background: var(--scrim); color: #fff;
+    font-size: var(--t-xs); font-weight: 600; padding: 4px 10px; border-radius: var(--r-pill); text-decoration: none;
+    backdrop-filter: blur(6px); border: 1px solid oklch(100% 0 0 / 0.12);
+  }
+  .slide .dl:hover { background: var(--accent); }
+
+  /* empty / status state */
+  .empty { display: grid; place-items: center; gap: var(--s4); text-align: center; color: var(--faint); }
+  .empty svg { width: 44px; height: 44px; opacity: .5; }
+  .empty .t { color: var(--subtext); font-size: var(--t-md); font-weight: 600; }
+  .empty .h { font-size: var(--t-sm); max-width: 240px; }
+  .status { color: var(--subtext); font-size: var(--t-md); text-align: center; }
+  .status.err { color: var(--danger); }
+
+  .result { font-size: var(--t-xs); color: var(--subtext); margin-top: var(--s2); line-height: 1.5; }
+
+  /* ── Responsive ── */
+  @media (max-width: 880px) {
+    body { flex-direction: column; }
+    .panel { width: 100%; height: auto; border-right: 0; border-bottom: 1px solid var(--border); }
+    .stage { min-height: 56vh; }
+  }
+</style>
+</head>
+<body>
+  <aside class="panel">
+    <div class="brand">
+      <div class="glyph">TX</div>
+      <div>
+        <h1>Twit<span class="x">X</span>Gram</h1>
+      </div>
+    </div>
+    <p class="sub">Paste a tweet, shape it, render. The preview updates as you tweak.</p>
+
+    <!-- Source -->
+    <div class="group" style="border-top:0; margin-top:var(--s5); padding-top:0;">
+      <div class="group-title">Source</div>
+      <label class="tight">Tweet URL or ID</label>
+      <input id="url" type="text" placeholder="https://x.com/jack/status/20"/>
+    </div>
+
+    <!-- Appearance -->
+    <div class="group">
+      <div class="group-title">Appearance</div>
+      <div class="row">
+        <div>
+          <label class="tight">Theme</label>
+          <select id="theme"><option value="light">Light</option><option value="dark">Dark</option></select>
+        </div>
+        <div>
+          <label class="tight">Background</label>
+          <select id="background"><option value="">(default)</option></select>
+        </div>
+      </div>
+
+      <div class="bg-manager">
+        <div class="bg-grid" id="bgGallery"></div>
+        <input id="bgFile" type="file" accept="image/png,image/jpeg,image/webp,image/avif" hidden/>
+        <button id="bgUpload" class="ghost bg-upload" type="button">＋ Upload a background</button>
+      </div>
+
+      <div class="row">
+        <div>
+          <label>Format</label>
+          <select id="format">
+            <option value="png">PNG</option><option value="jpg">JPG</option>
+            <option value="webp">WebP</option><option value="svg">SVG</option>
+          </select>
+        </div>
+        <div>
+          <label>Aspect ratio</label>
+          <select id="aspectRatio">
+            <option value="auto">auto</option><option>1:1</option><option>4:5</option>
+            <option>5:4</option><option>16:9</option><option>9:16</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div><label>Style</label>
+          <select id="style"><option value="tweet">Screenshot</option><option value="quote">Quote poster</option></select>
+        </div>
+        <div><label>Scale</label>
+          <select id="scale"><option value="1">1×</option><option value="2" selected>2×</option><option value="3">3×</option></select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div><label>Corner radius</label><input id="borderRadius" type="number" value="16" min="0" max="60"/></div>
+        <div id="quoteFontRow" style="display:none; flex-direction:column;"><label>Quote font</label>
+          <label class="chk" style="padding-top:6px"><input type="checkbox" id="quoteFont"/> Serif</label>
+        </div>
+      </div>
+
+      <div class="checks">
+        <label class="chk"><input type="checkbox" id="shadow" checked/> Shadow</label>
+        <label class="chk"><input type="checkbox" id="showMeta" checked/> Show meta</label>
+        <label class="chk"><input type="checkbox" id="carousel"/> Carousel</label>
+        <label class="chk"><input type="checkbox" id="thread"/> Thread</label>
+      </div>
+
+      <div id="threadPanel" style="display:none">
+        <label>Thread style</label>
+        <select id="threadStyle"><option value="stack">Stack (one image)</option><option value="carousel">Carousel (slides)</option></select>
+
+        <label>Include a reply <span class="muted">— paste a reply's link to add it</span></label>
+        <div class="reply-add">
+          <input id="replyInput" type="text" placeholder="https://x.com/user/status/…"/>
+          <button id="replyAdd" class="ghost" type="button">Add</button>
+        </div>
+        <div id="replyChips" class="chips"></div>
+
+        <label>Detected tweets <span class="muted">— other accounts off by default; check to include</span></label>
+        <div class="thread-box" id="threadBox"><div class="muted">Render or leave the URL field to load the thread…</div></div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="group">
+      <button id="render" class="primary block">Render</button>
+      <div class="btns">
+        <button id="copy" class="ghost">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          Copy URL
+        </button>
+        <button id="download" class="ghost">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
+          Download
+        </button>
+      </div>
+    </div>
+
+    <!-- Publish & automation -->
+    <details id="mcDetails">
+      <summary>Schedule to Metricool</summary>
+      <label class="tight">Caption</label>
+      <textarea id="mcText" rows="3" placeholder="Post caption…"></textarea>
+      <div class="row">
+        <div><label>When (optional)</label><input id="mcWhen" type="datetime-local"/></div>
+        <div><label>Networks</label><input id="mcNetworks" type="text" value="instagram"/></div>
+      </div>
+      <label>Brand</label>
+      <select id="mcBrand"><option value="">— load or type id below —</option></select>
+      <input id="mcBlogId" type="text" placeholder="blogId (or pick a brand above)" style="margin-top:8px"/>
+      <div class="checks"><label class="chk"><input type="checkbox" id="mcDraft" checked/> Draft (don't auto-publish)</label></div>
+      <div class="btns">
+        <button id="mcLoad" class="ghost">Load brands</button>
+        <button id="mcSchedule" class="primary">Schedule</button>
+      </div>
+      <div class="result" id="mcResult"></div>
+    </details>
+
+    <details id="watchDetails">
+      <summary>Auto-follow accounts</summary>
+      <p class="muted" style="margin: 0 0 var(--s2)">New tweets → auto-draft to Metricool using the current Style/background. Threads render whole.</p>
+      <div class="row">
+        <div><label class="tight">@username to follow</label><input id="wUser" type="text" placeholder="username"/></div>
+        <div><label class="tight">Networks</label><input id="wNetworks" type="text" value="instagram"/></div>
+      </div>
+      <label>Brand <span class="muted">— Load brands, then pick (or type a blogId)</span></label>
+      <select id="wBrand"><option value="">— load or type id below —</option></select>
+      <input id="wBlog" type="text" placeholder="blogId (or pick a brand above)" style="margin-top:8px"/>
+      <div class="btns">
+        <button id="wAdd" class="primary">Follow</button>
+        <button id="wRun" class="ghost">Run now</button>
+      </div>
+      <div class="thread-box" id="wList" style="margin-top:var(--s3)"><div class="muted">No watched accounts.</div></div>
+      <div class="result" id="wResult"></div>
+    </details>
+
+    <details>
+      <summary>API</summary>
+      <p class="muted"><code id="apiUrl"></code></p>
+      <p class="muted">Endpoints: <code>/api/v1/screenshot/:id</code> · <code>/api/v1/thread/:id</code> · <code>/api/v1/backgrounds</code></p>
+    </details>
+  </aside>
+
+  <main class="stage">
+    <div class="preview" id="preview">
+      <div class="empty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+        <div>
+          <div class="t">Your render appears here</div>
+          <div class="h">Paste a tweet URL on the left and hit Render.</div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="/app.js"></script>
+</body>
+</html>

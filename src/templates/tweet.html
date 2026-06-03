@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    display: inline-flex;
+    align-items: flex-start;
+    justify-content: center;
+    background: transparent;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif,
+                 "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Segoe UI Symbol";
+  }
+
+  .container {
+    width: {{WIDTH}}px;
+    border-radius: {{BORDER_RADIUS}}px;
+    overflow: hidden;
+    background: {{CONTAINER_BG}};
+    padding: {{PADDING}}px;
+    position: relative;
+    {{ASPECT_RATIO_STYLE}}
+  }
+
+  /* The stack scales to fit the frame (set by the fitter); origin keeps it centered. */
+  .stack { width: 100%; transform-origin: center center; }
+
+  /* ── Thread layout (multiple tweets in one card) ── */
+  .thread-item { display: flex; gap: 12px; }
+  .thread-item .rail { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; }
+  .thread-item .rail .avatar { width: 44px; height: 44px; }
+  /* Connector line links each avatar down to the next tweet's avatar. */
+  .thread-item:not(:last-child) .rail::after {
+    content: ''; width: 2px; flex: 1 1 auto; min-height: 12px;
+    background: var(--border); margin: 6px 0 0;
+  }
+  .thread-item .tbody { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+  .thread-item:not(:last-child) .tbody { padding-bottom: 16px; }
+  .thread-namerow { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+  .thread-namerow .display-name { font-size: 15px; }
+  .thread-namerow .username { font-size: 14px; }
+  .thread-logo { position: absolute; top: 18px; right: 18px; }
+
+  /* ── Quote poster ("tweet as poster") ── */
+  .quote-poster {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    padding: 12px 8px;
+  }
+  .quote-poster.theme-light { color: #0f1419; }
+  .quote-poster.theme-dark  { color: #ffffff; text-shadow: 0 1px 18px rgba(0,0,0,.18); }
+  .quote-mark {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 72px; line-height: .4; font-weight: 800; opacity: .28;
+    margin-bottom: -8px;
+  }
+  .quote-body {
+    font-size: 33px; line-height: 1.32; font-weight: 700; letter-spacing: -0.4px;
+    word-break: break-word; white-space: pre-wrap;
+  }
+  .quote-poster.qfont-serif .quote-body {
+    font-family: Georgia, "Times New Roman", serif; font-weight: 600; letter-spacing: 0;
+  }
+  .quote-body .mention, .quote-body .hashtag, .quote-body .url { color: inherit; opacity: .85; }
+  .quote-attr { display: flex; align-items: center; gap: 12px; margin-top: 4px; }
+  .qa-avatar { width: 46px; height: 46px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: rgba(127,127,127,.3); }
+  .qa-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .qa-name { font-weight: 700; font-size: 16px; display: flex; align-items: center; gap: 4px; }
+  .qa-handle { font-size: 14px; opacity: .72; }
+
+  /* ── Swipe indicator (carousel) ── */
+  .swipe-indicator {
+    position: absolute;
+    left: 0; right: 0;
+    bottom: 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    pointer-events: none;
+  }
+  .swipe-pill {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(0,0,0,.42);
+    backdrop-filter: blur(4px);
+    padding: 7px 12px;
+    border-radius: 999px;
+  }
+  .swipe-dots { display: flex; align-items: center; gap: 6px; }
+  .swipe-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.45);
+    transition: all .2s;
+  }
+  .swipe-dot.active { background: #fff; width: 20px; border-radius: 4px; }
+  .swipe-count { font-size: 12px; font-weight: 700; color: #fff; letter-spacing: .3px; }
+  .swipe-hint {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #fff;
+    background: rgba(0,0,0,.42);
+    backdrop-filter: blur(4px);
+    padding: 6px 12px;
+    border-radius: 999px;
+  }
+  .swipe-hint svg { width: 14px; height: 14px; }
+
+  /* ── Themes ── */
+  .theme-light { --bg: #ffffff; --text: #0f1419; --subtext: #536471; --border: #eff3f4; --card-bg: #f7f9f9; --link: #1d9bf0; }
+  .theme-dark  { --bg: #15202b; --text: #e7e9ea; --subtext: #8b98a5; --border: #2f3336; --card-bg: #1e2732; --link: #1d9bf0; }
+
+  .tweet-card {
+    background: var(--bg);
+    border-radius: {{CARD_RADIUS}}px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    position: relative;
+    {{CARD_SHADOW}}
+  }
+
+  /* ── Header ── */
+  .header {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .avatar {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    overflow: hidden;
+    background: var(--border);
+  }
+  .avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .author-info { flex: 1; min-width: 0; }
+  .display-name {
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .verified-badge { display: inline-flex; align-items: center; flex-shrink: 0; }
+  .username {
+    font-size: 14px;
+    color: var(--subtext);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .logo { margin-left: auto; flex-shrink: 0; }
+
+  /* ── Tweet text ── */
+  .tweet-text {
+    font-size: 17px;
+    line-height: 1.5;
+    color: var(--text);
+    word-break: break-word;
+    white-space: pre-wrap;
+  }
+  .tweet-text .mention, .tweet-text .hashtag, .tweet-text .url {
+    color: var(--link);
+  }
+
+  /* ── Media ── */
+  .media-grid {
+    border-radius: 12px;
+    overflow: hidden;
+    display: grid;
+    gap: 2px;
+  }
+  .media-grid.count-1 { grid-template-columns: 1fr; }
+  .media-grid.count-2 { grid-template-columns: 1fr 1fr; }
+  .media-grid.count-3 { grid-template-columns: 1fr 1fr; }
+  .media-grid.count-3 .media-item:first-child { grid-row: span 2; }
+  .media-grid.count-4 { grid-template-columns: 1fr 1fr; }
+
+  .media-grid.layout-vertical { grid-template-columns: 1fr !important; }
+  .media-grid.layout-vertical .media-item:first-child { grid-row: unset !important; }
+
+  .media-item {
+    aspect-ratio: 16/9;
+    overflow: hidden;
+    background: var(--border);
+  }
+  .media-grid.count-1 .media-item { aspect-ratio: auto; max-height: 400px; }
+  .media-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+  /* ── Quote tweet ── */
+  .quote-tweet {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .quote-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .quote-avatar {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: var(--border);
+    flex-shrink: 0;
+  }
+  .quote-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .quote-name { font-size: 13px; font-weight: 700; color: var(--text); }
+  .quote-username { font-size: 13px; color: var(--subtext); }
+  .quote-text { font-size: 14px; line-height: 1.4; color: var(--text); white-space: pre-wrap; }
+  .quote-media {
+    border-radius: 10px;
+    overflow: hidden;
+    max-height: 220px;
+    background: var(--border);
+  }
+  .quote-media img { width: 100%; height: 100%; max-height: 220px; object-fit: cover; display: block; }
+
+  /* ── Timestamp ── */
+  .timestamp {
+    font-size: 14px;
+    color: var(--subtext);
+    border-top: 1px solid var(--border);
+    padding-top: 12px;
+  }
+
+  /* ── Stats ── */
+  .stats {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    border-top: 1px solid var(--border);
+    padding-top: 12px;
+  }
+  .stat { display: flex; align-items: center; gap: 4px; }
+  .stat-value { font-size: 14px; font-weight: 700; color: var(--text); }
+  .stat-label { font-size: 14px; color: var(--subtext); }
+
+  /* ── Verified badges ── */
+  .badge-blue  { color: #1d9bf0; }
+  .badge-gold  { color: #f4af11; }
+  .badge-gray  { color: #8b98a5; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="stack">{{CARDS_HTML}}</div>
+  {{CAROUSEL_INDICATOR}}
+</div>
+</body>
+</html>
