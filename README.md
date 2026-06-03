@@ -237,6 +237,10 @@ POST /api/v1/publish
 Pick which brand to post to at runtime — `GET /api/v1/metricool/brands` lists every brand on your
 account, and the playground's brand dropdowns are populated from it. Nothing is tied to a specific brand.
 
+**Captions:** the post `text` is yours to write — raw tweet text rarely makes a good caption. See
+[`docs/captions.md`](docs/captions.md) for the repeatable process: draft → run the `ai-slop-detector`
+pass → schedule the cleaned caption.
+
 - **Public URLs:** Metricool fetches the image by URL, so set **`PUBLIC_BASE_URL`** to your deployed
   origin (else `/output` links use the request host).
 - **Safety:** payloads default to `draft:true` / `autoPublish:false`. Optionally hard-block any brand
